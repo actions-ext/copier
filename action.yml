@@ -18,7 +18,7 @@ runs:
         python-version: '3.11'
     - run: pip install copier
       shell: bash
-    - run: copier update -A -f -a ".copier-answers*"
+    - run: copier update -A -f -a .copier-answers*
       shell: bash
     - run: |
         if [[ `git status --porcelain` ]]; then
