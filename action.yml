@@ -21,7 +21,7 @@ runs:
     - run: copier update -A -f -a .copier-answers*
       shell: bash
     - run: |
-        if [[ `git status --porcelain` ]]; then
+        if [[ `git status --porcelain  -- ':!.copier-answers.yaml'` ]]; then
           CURRENT_DATE=`date -u +"%Y-%m-%dT%H-%M-%S"`
           MESSAGE="Update from copier (`date -u +"%Y-%m-%dT%H:%M:%S"`)"
           BRANCH=copier-update-$CURRENT_DATE
