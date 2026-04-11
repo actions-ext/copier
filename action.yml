@@ -13,13 +13,44 @@ runs:
     - uses: actions/checkout@v4
       with:
         token: ${{  inputs.token }}
+
     - uses: actions/setup-python@v6
       with:
         python-version: '3.11'
+
     - run: pip install copier
       shell: bash
+
     - run: copier update -A -f -a .copier-answers*
       shell: bash
+
+    - if: hashFiles('pnpm-lock.yaml') != ''
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
+    - if: hashFiles('pnpm-lock.yaml') != ''
+      run: pnpm install --no-frozen-lockfile
+      shell: bash
+    - if: hashFiles('js/pnpm-lock.yaml') != ''
+      uses: pnpm/action-setup@v4
+      with:
+        version: 9
+        package_json_file: js/package.json
+    - if: hashFiles('js/pnpm-lock.yaml') != ''
+      run: cd js && pnpm install --no-frozen-lockfile
+      shell: bash
+
+    - if: hashFiles('Cargo.lock', 'rust/Cargo.lock') != ''
+      uses: dtolnay/rust-toolchain@stable
+      with:
+        toolchain: stable
+    - if: hashFiles('Cargo.lock') != ''
+      run: cargo update
+      shell: bash
+    - if: hashFiles('rust/Cargo.lock') != ''
+      run: cd rust && cargo update
+      shell: bash
+
     - run: |
         if [[ `git status --porcelain  -- ':!.copier-answers.yaml'` ]]; then
           CURRENT_DATE=`date -u +"%Y-%m-%dT%H-%M-%S"`
