@@ -28,28 +28,35 @@ runs:
       uses: pnpm/action-setup@v4
       with:
         version: 9
+      continue-on-error: true
     - if: hashFiles('pnpm-lock.yaml') != ''
       run: pnpm install --no-frozen-lockfile
       shell: bash
+      continue-on-error: true
     - if: hashFiles('js/pnpm-lock.yaml') != ''
       uses: pnpm/action-setup@v4
       with:
         version: 9
         package_json_file: js/package.json
+      continue-on-error: true
     - if: hashFiles('js/pnpm-lock.yaml') != ''
       run: cd js && pnpm install --no-frozen-lockfile
       shell: bash
+      continue-on-error: true
 
     - if: hashFiles('Cargo.lock', 'rust/Cargo.lock') != ''
       uses: dtolnay/rust-toolchain@stable
       with:
         toolchain: stable
+      continue-on-error: true
     - if: hashFiles('Cargo.lock') != ''
       run: cargo update
       shell: bash
+      continue-on-error: true
     - if: hashFiles('rust/Cargo.lock') != ''
       run: cd rust && cargo update
       shell: bash
+      continue-on-error: true
 
     - run: |
         if [[ `git status --porcelain  -- ':!.copier-answers.yaml'` ]]; then
