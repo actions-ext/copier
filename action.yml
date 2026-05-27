@@ -6,6 +6,22 @@ inputs:
     type: string
     description: "GitHub Token"
     required: true
+  base:
+    type: string
+    description: "Branch to update (default: main)"
+    required: false
+    default: "main"
+  branch:
+    type: string
+    description: "Branch to update (default: copier-update)"
+    required: false
+    default: "copier-update"
+  title:
+    type: string
+    description: "Pull request title (default: 'Update from copier')"
+    required: false
+    default: "Update from copier"
+
 
 runs:
   using: 'composite'
@@ -61,15 +77,15 @@ runs:
     - run: |
         if [[ `git status --porcelain  -- ':!.copier-answers.yaml'` ]]; then
           CURRENT_DATE=`date -u +"%Y-%m-%dT%H-%M-%S"`
-          MESSAGE="Update from copier (`date -u +"%Y-%m-%dT%H:%M:%S"`)"
-          BRANCH=copier-update-$CURRENT_DATE
+          MESSAGE="${{  inputs.title }} from copier (`date -u +"%Y-%m-%dT%H:%M:%S"`)"
+          BRANCH=${{  inputs.branch }}-$CURRENT_DATE
           git config --global user.name "github-actions"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b $BRANCH
           git add .
           git commit -m "$MESSAGE" -s
           git push origin $BRANCH
-          gh pr create -B main -H $BRANCH --title "$MESSAGE" --body ""
+          gh pr create -B ${{  inputs.base }} -H $BRANCH --title "$MESSAGE" --body ""
         fi
       shell: bash
       env:
