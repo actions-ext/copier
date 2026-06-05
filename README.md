@@ -5,7 +5,16 @@ Action to update copier-templated repo from upstream
 ## Configuration
 If you're using a GitHub organization, navigate to your organization's action settings (like `https://github.com/organizations/your-org-name-here/settings/actions`) and toggle `Read and write permissions` under `Workflow Permissions`.
 
-Create a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) and store it in an [actions secret](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions). In the below example, we've named it `WORKFLOW_SECRET`. 
+Create a [personal access token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) and store it in an [actions secret](https://docs.github.com/en/actions/security-for-github-actions/security-guides/using-secrets-in-github-actions). In the below example, we've named it `WORKFLOW_SECRET`.
+
+### Token Permissions
+
+**Classic PAT:** The token needs the `repo` scope (for private repositories) or `public_repo` scope (for public repositories). This grants read/write access to repository contents and pull requests.
+
+**Fine-grained token:** The token needs the following repository permissions:
+- `Contents` — **Read and write** (to push the update branch)
+- `Pull requests` — **Read and write** (to create the PR)
+- `Metadata` — **Read** (automatically granted; needed to read repository info)
 
 Now you can create a workflow like `.github/workflow/copier.yml`:
 
