@@ -9,11 +9,12 @@ Create a [personal access token](https://docs.github.com/en/authentication/keepi
 
 ### Token Permissions
 
-**Classic PAT:** The token needs the `repo` scope (for private repositories) or `public_repo` scope (for public repositories). This grants read/write access to repository contents and pull requests.
+**Classic PAT:** The token needs the `repo` scope (for private repositories) or `public_repo` scope (for public repositories), plus `workflow` scope. The `workflow` scope is required because copier-templated repos often include `.github/workflows/` files, which a token without `workflow` cannot push.
 
 **Fine-grained token:** The token needs the following repository permissions:
 - `Contents` — **Read and write** (to push the update branch)
 - `Pull requests` — **Read and write** (to create the PR)
+- `Workflows` — **Read and write** (to push `.github/workflows/` files)
 - `Metadata` — **Read** (automatically granted; needed to read repository info)
 
 Now you can create a workflow like `.github/workflow/copier.yml`:
