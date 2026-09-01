@@ -1,0 +1,75 @@
+name: Build Status
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      with:
+        persist-credentials: false
+
+    - name: Build a copier template and a project generated from it
+      run: |
+        set -eux
+        git config --global user.name "github-actions"
+        git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --global init.defaultBranch main
+        pip install copier
+
+        mkdir -p "$TEMPLATE"
+        cd "$TEMPLATE"
+        printf '_answers_file: .copier-answers.yaml\n\nproject_name:\n  type: str\n  default: demo\n' > copier.yml
+        printf 'hello {{ project_name }}\n' > hello.txt.jinja
+        printf '{{ _copier_answers|to_nice_yaml }}\n' > '{{ _copier_conf.answers_file }}.jinja'
+        git init -q .
+        git add -A
+        git commit -qm "template v1"
+        git tag v1
+
+        copier copy --defaults --vcs-ref v1 "$TEMPLATE" "$PROJECT"
+        cd "$PROJECT"
+        git init -q .
+        git add -A
+        git commit -qm "generated"
+
+        cd "$TEMPLATE"
+        printf 'goodbye {{ project_name }}\n' > bye.txt.jinja
+        git add -A
+        git commit -qm "template v2"
+        git tag v2
+      shell: bash
+      env:
+        TEMPLATE: ${{ runner.temp }}/template
+        PROJECT: ${{ runner.temp }}/project
+
+    - name: Run the update action
+      uses: ./update
+      with:
+        token: ${{ github.token }}
+        path: ${{ runner.temp }}/project
+        dry_run: true
+
+    - name: Verify the project was updated in place
+      run: |
+        set -eux
+        test -f "$PROJECT/bye.txt"
+        grep -q "goodbye demo" "$PROJECT/bye.txt"
+        git -C "$PROJECT" status --porcelain | grep -q .
+      shell: bash
+      env:
+        PROJECT: ${{ runner.temp }}/project
